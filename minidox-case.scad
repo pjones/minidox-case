@@ -26,8 +26,6 @@ feature_cover = false;           /* Will you use a cover? */
 
 /******************************************************************************/
 // Settings you may want to tweak:
-rounding = 2.25;                /* How much rounding to apply. */
-thickness = 2.0;                /* Wall thickness. */
 inner_depth = 9.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
 outer_spacing = 1.0;            /* Extra space in the case for the board to fit in. */
@@ -37,6 +35,10 @@ bolt_size = [3.0, 16.0];        /* M3x16 */
 bolt_inset = 2.5;               /* From wall to center of bolt. */
 bolt_shaft_wall = 2.0;          /* Wall thickness of shaft bolt screws into. */
 bolt_recess = 4.0;              /* How deep bolts go into the bottom. */
+
+/******************************************************************************/
+rounding = 2.25;                /* How much rounding to apply. */
+thickness = 4;                  /* Wall thickness. */
 
 /******************************************************************************/
 // Points that outline the desired case shape:
@@ -72,7 +74,7 @@ pro_micro = [ 20.0
 trrs = [ 12.0
        , 12.0
        , 5.23
-       , 16.85
+       , 18.90
        , 2.16
        ];
 
@@ -97,6 +99,15 @@ wall_thickness_no_padding = feature_cover ? thickness * 2 : thickness;
 wall_thickness = wall_thickness_no_padding + outer_spacing/2;
 bolt_shaft = bolt_size[0] + bolt_shaft_wall;
 shelf_width = inner_spacing + outer_spacing + rounding;
+
+/******************************************************************************/
+reset_button = [ 5.2            /* x */
+               , shelf_width    /* y */
+               , 2              /* z */
+               , 36.6           /* center of x */
+               , 3.25           /* center of y */
+               , 2.25           /* diameter of reset hole */
+               ];
 
 /******************************************************************************/
 module outer_case() {
@@ -161,6 +172,7 @@ module back_wall_device(dims) {
        , outer_height
        ]);
 
+  // Cutout for the connector.
   translate([ center_x_offset
             , 0
             , thickness + inner_height - dims[4]
@@ -179,39 +191,56 @@ module pro_micro_cutout() {
     : connector_z/2;
 
   back_wall_device(pro_micro) {
+    translate([0, -(wall_thickness/2), 0])
+     cube([9, wall_thickness, connector_z], center=true);
+
     hull() { // This hull should allow printing without supports.
-      translate([0, -(wall_thickness/2), 0])
-       cube([9, wall_thickness, connector_z], center=true);
+      translate([0, -(wall_thickness_no_padding), 0])
+        cube([pro_micro[0]/2, wall_thickness_no_padding/2, connector_z], center=true);
       translate([0, board_y/2 - wall_thickness_no_padding, board_z_offset])
         cube([pro_micro[0], board_y, board_z], center=true);
-      }
+    }
   }
 }
 
 /******************************************************************************/
   // Cut out for the TRRS jack:
 module trrs_cutout() {
-  back_wall_device(trrs)
+  back_wall_device(trrs) {
     translate([0, -(wall_thickness/2), 0])
-    rotate([90, 0, 0])
-    cylinder(d=6, h=wall_thickness, center=true);
+      rotate([90, 0, 0])
+      cylinder(d=6.5, h=wall_thickness, center=true);
+  }
+}
+
+/******************************************************************************/
+// Extra material to support the reset hole.
+module reset_extra_material() {
+  translate([ wall_thickness + reset_button[3]
+            , -(wall_thickness + reset_button[4])
+            , thickness
+            ])
+    cylinder(d=reset_button[5]*2, h=inner_height - reset_button[2]);
 }
 
 /******************************************************************************/
 // Cut out a hole for the reset pin.
 module reset_cutout() {
-  reset_x = 36.6;
-  reset_y = 3.25;
-
-  translate([wall_thickness + reset_x, 0, 0])
+  translate([wall_thickness + reset_button[3], 0, 0])
     union() {
       // Thin hole so you can push the rest button:
-      translate([0, -(wall_thickness + reset_y), 0])
-        cylinder(d=2.25, h=outer_height);
+      translate([0, -(wall_thickness + reset_button[4]), 0])
+        cylinder(d=reset_button[5], h=outer_height);
 
       // Hole for the reset to rest in:
-      translate([0, -(wall_thickness_no_padding + shelf_width/2), thickness + inner_height - 1])
-        cube([5.2, shelf_width, 2], center=true);
+      translate([ 0
+                , -(wall_thickness_no_padding + reset_button[1]/2)
+                , thickness + inner_height - reset_button[2]/2
+                ])
+        cube([ reset_button[0]
+             , reset_button[1]
+             , reset_button[2]
+             ], center=true);
   }
 }
 
@@ -295,6 +324,7 @@ module case() {
 
       // Extra material:
       case_bolt_extra_material();
+      reset_extra_material();
     }
 
     // Now cut out some material for various devices:
