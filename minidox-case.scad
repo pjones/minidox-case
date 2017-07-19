@@ -18,7 +18,7 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "case";            /* case, inset, or cover */
+print_part = "top";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
@@ -29,16 +29,20 @@ feature_cover = false;           /* Will you use a cover? */
 inner_depth = 9.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
 outer_spacing = 1.0;            /* Extra space in the case for the board to fit in. */
-board_to_caps = 22.0;           /* Total height from board up to the key caps. */
 cover_inner_space = 10.0;       /* Extra space in the cover for cables, etc. */
+board_thickness = 1.6;          /* Thickness of circuit board. */
+switch_height = 11.75;          /* Space between top of board and bottom of key cap */
+cap_height = 7.90;              /* Height of keycap. */
 bolt_size = [3.0, 16.0];        /* M3x16 */
 bolt_inset = 2.5;               /* From wall to center of bolt. */
 bolt_shaft_wall = 2.0;          /* Wall thickness of shaft bolt screws into. */
 bolt_recess = 4.0;              /* How deep bolts go into the bottom. */
 
 /******************************************************************************/
+// I don't recommend changing these:
 rounding = 2.25;                /* How much rounding to apply. */
 thickness = 4;                  /* Wall thickness. */
+board_overlap = 1.8;            /* Space around the board the top can sit on */
 
 /******************************************************************************/
 // Points that outline the desired case shape:
@@ -47,6 +51,33 @@ outline = [
   [95.30,    0.00],
   [95.30,  -64.30],
   [51.00,  -81.00],
+  [12.00,  -85.00],
+  [-4.40,  -96.00],
+  [-21.00, -67.50],
+  [0.00,   -54.25],
+];
+
+/******************************************************************************/
+// Points that outline the shape to cut out of the top so the key caps
+// can poke through:
+top_cut = [
+  [0.00,    -5.50], // Left of Y
+  [18.50,   -5.50], // Left of U
+  [18.50,   -3.00], // Left of U (moved up)
+  [37.00,   -3.00], // Left of I
+  [37.00,    0.00], // Left of I (moved up)
+  [55.50,    0.00], // Left of O
+  [55.50,   -3.00], // Left of O (moved down)
+  [74.00,   -3.00], // Left of P
+  [74.00,   -7.50], // Left of P (moved down)
+  [95.30,   -7.50], // Right of P
+  [95.30,  -64.30], // Right of /
+  [76.80,  -64.30], // Left of /
+  [76.80,  -59.80], // Left of / (moved up)
+  [58.30,  -59.80], // Left of .
+  [58.30,  -57.30], // Left of . (moved up)
+  [49.80,  -57.30],
+  [48.80,  -85.00],
   [12.00,  -85.00],
   [-4.40,  -96.00],
   [-21.00, -67.50],
@@ -79,22 +110,8 @@ trrs = [ 12.0
        ];
 
 /******************************************************************************/
-// How high to make the shelf that the board sits on:
-inner_height = pro_micro[2] + 2.0;
-echo("INNER HEIGHT: ", inner_height);
-
-/******************************************************************************/
-// Full case height:
-outer_height = inner_height + inner_depth;
-echo("OUTER HEIGHT:", outer_height);
-
-/******************************************************************************/
-// How big the cover needs to be to enclose everything:
-cover_inner_height = board_to_caps + cover_inner_space - inner_depth;
-echo("COVER INNER HEIGHT:", cover_inner_height);
-
-/******************************************************************************/
 // Other computed values:
+board_to_caps = switch_height + cap_height;
 wall_thickness_no_padding = feature_cover ? thickness * 2 : thickness;
 wall_thickness = wall_thickness_no_padding + outer_spacing/2;
 bolt_shaft = bolt_size[0] + bolt_shaft_wall;
@@ -108,6 +125,21 @@ reset_button = [ 5.2            /* x */
                , 3.25           /* center of y */
                , 2.25           /* diameter of reset hole */
                ];
+
+/******************************************************************************/
+// How high to make the shelf that the board sits on:
+inner_height = pro_micro[2] + 2.0;
+echo("INNER HEIGHT: ", inner_height);
+
+/******************************************************************************/
+// Full case height:
+outer_height = inner_height + inner_depth;
+echo("OUTER HEIGHT:", outer_height);
+
+/******************************************************************************/
+// How big the cover needs to be to enclose everything:
+cover_inner_height = board_to_caps + cover_inner_space - inner_depth;
+echo("COVER INNER HEIGHT:", cover_inner_height);
 
 /******************************************************************************/
 module outer_case() {
@@ -337,6 +369,60 @@ module case() {
 }
 
 /******************************************************************************/
+module top_studs() {
+  height = outer_height + thickness - bolt_recess - 1.0;
+
+  difference() {
+    bolts()
+      cylinder(d=bolt_shaft-0.5, h=height);
+
+    bolts()
+      translate([0, 0, thickness])
+      cylinder(d=bolt_size[0] - 0.5, h=height);
+  }
+}
+
+/******************************************************************************/
+module top() {
+  // This translate means all measurements made outside the union will
+  // be relative to the circuit board.  This makes it easier to make
+  // measurements.
+  translate([ outer_spacing + wall_thickness_no_padding
+            , -(outer_spacing + wall_thickness_no_padding)
+            , 0
+            ])
+    difference() {
+      union() {
+        // Main plate for the top:
+        linear_extrude(height=thickness)
+          offset(delta=outer_spacing/2 + thickness)
+          offset(r=+rounding) offset(delta=-rounding)
+          polygon(points=outline);
+
+        // Ledge that holds the board down.
+        difference() {
+          depth = inner_depth - board_thickness - 0.5;
+
+          translate([0, 0, thickness])
+            linear_extrude(height=depth)
+            offset(delta=outer_spacing/2)
+            polygon(points=outline);
+
+          translate([0, 0, thickness])
+            linear_extrude(height=depth)
+            offset(delta=-board_overlap)
+            polygon(points=outline);
+        }
+      }
+
+      linear_extrude(height=depth)
+      polygon(points=top_cut);
+    }
+
+  top_studs();
+}
+
+/******************************************************************************/
 // For test fitting:
 module board() {
   board_height = 1.6;
@@ -351,4 +437,7 @@ module board() {
 if (print_part == "case") {
   if (print_side == "right") {case();}
   else {mirror([1, 0, 0]) case();}
+} else if (print_part == "top") {
+  if (print_side == "right") {mirror([1, 0, 0]) top();}
+  else {top();}
 }
