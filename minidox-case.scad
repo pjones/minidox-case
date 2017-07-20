@@ -18,7 +18,7 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "top";            /* case, top, or cover */
+print_part = "case";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
@@ -26,7 +26,7 @@ feature_cover = false;           /* Will you use a cover? */
 
 /******************************************************************************/
 // Settings you may want to tweak:
-inner_depth = 9.0;              /* How high the case will come up from the board upward. */
+inner_depth = 7.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
 outer_spacing = 1.0;            /* Extra space in the case for the board to fit in. */
 cover_inner_space = 10.0;       /* Extra space in the cover for cables, etc. */
@@ -105,7 +105,7 @@ pro_micro = [ 20.0
 trrs = [ 12.0
        , 12.0
        , 5.23
-       , 18.90
+       , 18.40
        , 2.16
        ];
 
