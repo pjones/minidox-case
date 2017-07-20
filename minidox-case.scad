@@ -61,27 +61,27 @@ outline = [
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
 top_cut = [
-  [0.00,    -5.50], // Left of Y
-  [18.50,   -5.50], // Left of U
-  [18.50,   -3.00], // Left of U (moved up)
-  [37.00,   -3.00], // Left of I
-  [37.00,    0.00], // Left of I (moved up)
-  [55.50,    0.00], // Left of O
-  [55.50,   -3.00], // Left of O (moved down)
-  [74.00,   -3.00], // Left of P
-  [74.00,   -7.50], // Left of P (moved down)
-  [95.30,   -7.50], // Right of P
-  [95.30,  -64.30], // Right of /
-  [76.80,  -64.30], // Left of /
-  [76.80,  -59.80], // Left of / (moved up)
-  [58.30,  -59.80], // Left of .
-  [58.30,  -57.30], // Left of . (moved up)
-  [49.80,  -57.30],
-  [48.80,  -85.00],
+  [-0.50,   -5.50], // Left of Y
+  [18.00,   -5.50], // Left of U
+  [18.00,   -3.00], // Left of U (moved up)
+  [37.50,   -3.00], // Left of I
+  [37.50,    0.00], // Left of I (moved up)
+  [56.50,    0.00], // Left of O
+  [56.50,   -3.00], // Left of O (moved down)
+  [76.00,   -3.00], // Left of P
+  [76.00,   -7.50], // Left of P (moved down)
+  [95.80,   -7.50], // Right of P
+  [95.80,  -64.30], // Right of /
+  [76.30,  -64.30], // Left of /
+  [76.30,  -60.30], // Left of / (moved up)
+  [56.80,  -60.30], // Left of .
+  [56.80,  -57.30], // Left of . (moved up)
+  [50.30,  -57.30],
+  [50.30,  -83.00],
   [12.00,  -85.00],
-  [-4.40,  -96.00],
-  [-21.00, -67.50],
-  [0.00,   -54.25],
+  [-4.40,  -97.00],
+  [-22.50, -66.50],
+  [-0.50,  -53.25],
 ];
 
 /******************************************************************************/
