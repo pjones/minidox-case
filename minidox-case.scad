@@ -18,7 +18,7 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "case";            /* case, top, or cover */
+print_part = "top";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
@@ -61,28 +61,40 @@ outline = [
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
 top_cut = [
+  // Upper half:
   [-0.50,   -5.50], // Left of Y
   [18.00,   -5.50], // Left of U
   [18.00,   -3.00], // Left of U (moved up)
-  [37.50,   -3.00], // Left of I
-  [37.50,    0.00], // Left of I (moved up)
+  [38.00,   -3.00], // Left of I
+  [38.00,    0.00], // Left of I (moved up)
   [56.50,    0.00], // Left of O
   [56.50,   -3.00], // Left of O (moved down)
   [76.00,   -3.00], // Left of P
   [76.00,   -7.50], // Left of P (moved down)
   [95.80,   -7.50], // Right of P
-  [95.80,  -64.30], // Right of /
-  [76.30,  -64.30], // Left of /
-  [76.30,  -60.30], // Left of / (moved up)
-  [56.80,  -60.30], // Left of .
-  [56.80,  -57.30], // Left of . (moved up)
-  [50.30,  -57.30],
-  [50.30,  -83.00],
-  [12.00,  -85.00],
-  [-4.40,  -97.00],
-  [-22.50, -66.50],
-  [-0.50,  -53.25],
+
+  // Lower half:
+  [95.80,  -65.00], // Right of /
+  [76.00,  -65.00], // Left of /
+  [76.00,  -60.30], // Left of / (moved up)
+  [56.50,  -60.30], // Left of .
+  [56.50,  -58.00], // Left of . (moved up)
+  [38.00,  -58.00], // Right of M
+  [38.00,  -61.00], // Right of M (moved down)
+  [18.00,  -61.00], // Right of N
+  [18.00,  -63.50], // Right of N (moved down)
+  [-0.50,  -63.50], // Left of N
 ];
+
+// Now the three thumb keys:
+cap_1U = [19.00,     19.00];
+cap_2U = [cap_1U[0], 33.00];
+
+// These measurements are for the center of the cap and the
+// rotation.
+thumb_1 = [-5.50, 78.00, 32.0];
+thumb_2 = [21.50, 76.00, 6.00];
+thumb_3 = [44.50, 72.50, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
@@ -383,7 +395,20 @@ module top_studs() {
 }
 
 /******************************************************************************/
+module thumb_key_cutout(key_shape, key_dims, depth) {
+ translate([ key_dims[0]
+           , -key_dims[1]
+           , depth/2
+           ])
+    rotate([0, 0, key_dims[2]])
+      cube([key_shape[0], key_shape[1], depth], center=true);
+}
+
+/******************************************************************************/
 module top() {
+  depth = inner_depth - board_thickness - 0.5;
+  cut_depth = thickness * 4;
+
   // This translate means all measurements made outside the union will
   // be relative to the circuit board.  This makes it easier to make
   // measurements.
@@ -395,14 +420,12 @@ module top() {
       union() {
         // Main plate for the top:
         linear_extrude(height=thickness)
-          offset(delta=outer_spacing/2 + thickness)
+          offset(delta=outer_spacing + thickness)
           offset(r=+rounding) offset(delta=-rounding)
           polygon(points=outline);
 
         // Ledge that holds the board down.
         difference() {
-          depth = inner_depth - board_thickness - 0.5;
-
           translate([0, 0, thickness])
             linear_extrude(height=depth)
             offset(delta=outer_spacing/2)
@@ -415,8 +438,14 @@ module top() {
         }
       }
 
-      linear_extrude(height=depth)
+      // Most of the keys:
+      linear_extrude(height=cut_depth)
       polygon(points=top_cut);
+
+      // And then the thumb keys:
+      thumb_key_cutout(cap_2U, thumb_1, cut_depth);
+      thumb_key_cutout(cap_1U, thumb_2, cut_depth);
+      thumb_key_cutout(cap_1U, thumb_3, cut_depth);
     }
 
   top_studs();
