@@ -87,14 +87,14 @@ top_cut = [
 ];
 
 // Now the three thumb keys:
-cap_1U = [19.00,     19.00];
-cap_2U = [cap_1U[0], 33.00];
+cap_1U = [19.50,     19.50];
+cap_2U = [cap_1U[0], 35.00];
 
 // These measurements are for the center of the cap and the
 // rotation.
-thumb_1 = [-5.50, 78.00, 32.0];
-thumb_2 = [21.50, 76.00, 6.00];
-thumb_3 = [44.50, 72.50, 0.00];
+thumb_1 = [-5.50, 78.00, 30.0];
+thumb_2 = [24.00, 75.50, 15.00];
+thumb_3 = [47.50, 72.50, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
