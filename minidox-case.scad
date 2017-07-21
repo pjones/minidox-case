@@ -60,41 +60,60 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
+cap_1U = [19.50, 19.50, 0.25, 0.25];
+cap_2U = [cap_1U[0], 35.00, 0.25, 0.25];
+
+rows = 3;
+columns = 5;
+
+cap_x_start = -1.50;
+cap_x_stop  = cap_x_start + cap_1U[0] * columns + cap_1U[2] * columns;
+cap_y_upper = -1.00;
+cap_y_lower = -(cap_y_upper + cap_1U[1] * rows + cap_1U[3] * rows);
+
+function cap_over(keys) = cap_1U[0] * keys + cap_x_start;
+
+function column_over(column, base) = lookup(column, [
+    [ 1, -4.00 ],
+    [ 2, -2.00 ],
+    [ 3, -0.00 ],
+    [ 4, -2.00 ],
+    [ 5, -6.00 ],
+  ]) + base;
+
+
 top_cut = [
   // Upper half:
-  [-0.50,   -5.50], // Left of Y
-  [18.00,   -5.50], // Left of U
-  [18.00,   -3.00], // Left of U (moved up)
-  [38.00,   -3.00], // Left of I
-  [38.00,    0.00], // Left of I (moved up)
-  [56.50,    0.00], // Left of O
-  [56.50,   -3.00], // Left of O (moved down)
-  [76.00,   -3.00], // Left of P
-  [76.00,   -7.50], // Left of P (moved down)
-  [95.80,   -7.50], // Right of P
+  [cap_x_start, column_over(1, cap_y_upper)], // Left of Y
+  [cap_over(1), column_over(1, cap_y_upper)], // Left of U
+  [cap_over(1), column_over(2, cap_y_upper)], // Left of U (moved up)
+  [cap_over(2), column_over(2, cap_y_upper)], // Left of I
+  [cap_over(2), column_over(3, cap_y_upper)], // Left of I (moved up)
+  [cap_over(3), column_over(3, cap_y_upper)], // Left of O
+  [cap_over(3), column_over(4, cap_y_upper)], // Left of O (moved down)
+  [cap_over(4), column_over(4, cap_y_upper)], // Left of P
+  [cap_over(4), column_over(5, cap_y_upper)], // Left of P (moved down)
+  [cap_x_stop,  column_over(5, cap_y_upper)], // Right of P
 
   // Lower half:
-  [95.80,  -65.00], // Right of /
-  [76.00,  -65.00], // Left of /
-  [76.00,  -60.30], // Left of / (moved up)
-  [56.50,  -60.30], // Left of .
-  [56.50,  -58.00], // Left of . (moved up)
-  [38.00,  -58.00], // Right of M
-  [38.00,  -61.00], // Right of M (moved down)
-  [18.00,  -61.00], // Right of N
-  [18.00,  -63.50], // Right of N (moved down)
-  [-0.50,  -63.50], // Left of N
+  [cap_x_stop,  column_over(5, cap_y_lower)], // Right of /
+  [cap_over(4), column_over(5, cap_y_lower)], // Left of /
+  [cap_over(4), column_over(4, cap_y_lower)], // Left of / (moved up)
+  [cap_over(3), column_over(4, cap_y_lower)], // Left of .
+  [cap_over(3), column_over(3, cap_y_lower)], // Left of . (moved up)
+  [cap_over(2), column_over(3, cap_y_lower)], // Right of M
+  [cap_over(2), column_over(2, cap_y_lower)], // Right of M (moved down)
+  [cap_over(1), column_over(2, cap_y_lower)], // Right of N
+  [cap_over(1), column_over(1, cap_y_lower)], // Right of N (moved down)
+  [cap_x_start, column_over(1, cap_y_lower)], // Left of N
 ];
 
 // Now the three thumb keys:
-cap_1U = [19.50,     19.50];
-cap_2U = [cap_1U[0], 35.00];
-
 // These measurements are for the center of the cap and the
 // rotation.
-thumb_1 = [-5.50, 78.00, 30.0];
-thumb_2 = [24.00, 75.50, 15.00];
-thumb_3 = [47.50, 72.50, 0.00];
+thumb_1 = [-7.00, 76.00, 30.0];
+thumb_2 = [18.50, 75.50, 18.00];
+thumb_3 = [39.00, 72.50, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
@@ -401,7 +420,10 @@ module thumb_key_cutout(key_shape, key_dims, depth) {
            , depth/2
            ])
     rotate([0, 0, key_dims[2]])
-      cube([key_shape[0], key_shape[1], depth], center=true);
+    cube([ key_shape[0] + key_shape[2]
+         , key_shape[1] + key_shape[3]
+         , depth
+         ], center=true);
 }
 
 /******************************************************************************/
