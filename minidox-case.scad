@@ -18,18 +18,19 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "top";            /* case, top, or cover */
+print_part = "case";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
-feature_cover = false;           /* Will you use a cover? */
+feature_cover = true;           /* Will you use a cover? */
+feature_magnets = true;         /* Add holes to hold magnets? */
 
 /******************************************************************************/
 // Settings you may want to tweak:
 inner_depth = 9.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
 outer_spacing = 1.5;            /* Extra space in the case for the board to fit in. */
-cover_inner_space = 10.0;       /* Extra space in the cover for cables, etc. */
+cover_inner_space = 2.0;        /* Extra space in the cover for cables, etc. */
 board_thickness = 1.6;          /* Thickness of circuit board. */
 switch_height = 11.75;          /* Space between top of board and bottom of key cap */
 cap_height = 7.90;              /* Height of keycap. */
@@ -37,6 +38,15 @@ bolt_size = [3.0, 16.0];        /* M3x16 */
 bolt_inset = 2.5;               /* From wall to center of bolt. */
 bolt_shaft_wall = 2.0;          /* Wall thickness of shaft bolt screws into. */
 bolt_recess = 4.0;              /* How deep bolts go into the bottom. */
+
+/******************************************************************************/
+// If using magnets to hold the cover on, fill these out and add a
+// small amount of extra so the magnet can go in easily.
+//
+// The exact measurements of the magnets I'm using are:
+//   7.95mm x 2.80mm;
+magnet_diameter = 8.25;         /* Magnet diameter. */
+magnet_depth = 3.00;            /* Magnet depth. */
 
 /******************************************************************************/
 // I don't recommend changing these:
@@ -182,6 +192,17 @@ cover_inner_height = board_to_caps + cover_inner_space - inner_depth;
 echo("COVER INNER HEIGHT:", cover_inner_height);
 
 /******************************************************************************/
+// How big is the cover on the outside:
+cover_outer_height = max(outer_height, cover_inner_height) +
+  thickness + outer_height/2;
+echo("COVER OUTER HEIGHT:", cover_outer_height);
+
+/******************************************************************************/
+case_width = max([ for (i = outline) i[0] ]) +
+  ((outer_spacing + thickness)*2) +
+  (feature_cover ? thickness*2 : 0);
+
+/******************************************************************************/
 module outer_case() {
   difference() {
     union() {
@@ -193,10 +214,17 @@ module outer_case() {
 
       // Lower outer wall for case to sit on:
       if (feature_cover) {
-        linear_extrude(height=outer_height/2 + thickness)
-          offset(delta=outer_spacing + thickness*2)
-          offset(r=+rounding) offset(delta=-rounding)
-          polygon(points=outline);
+        difference() {
+          // The outer wall the case sits on.
+          linear_extrude(height=outer_height/2 + thickness)
+            offset(delta=outer_spacing + thickness*2)
+            offset(r=+rounding) offset(delta=-rounding)
+            polygon(points=outline);
+
+          // Cut the wall off the back so device access isn't limited.
+          translate([-(thickness*2), thickness + outer_spacing, 0])
+          cube([case_width, thickness, outer_height/2 + thickness]);
+        }
       }
     }
 
@@ -382,6 +410,13 @@ module case_bolt_extra_material() {
 }
 
 /******************************************************************************/
+module magnet(depth) {
+  cylinder(d=magnet_diameter,
+           h=max(depth, magnet_depth),
+           center=true);
+}
+
+/******************************************************************************/
 module case() {
   difference() {
     union() {
@@ -405,6 +440,26 @@ module case() {
     reset_cutout();
     edge_diode_cutout();
     case_bolt_holes();
+
+    // Optional holes for magnets.
+    if (feature_magnets) {
+      x_move = (thickness + inner_spacing)/2 + thickness +
+        (thickness - magnet_depth);
+
+      translate([ 0
+                , -35.00
+                , (magnet_diameter/2) + (outer_height - (outer_height/4)) - 1.0
+                ])
+      union() {
+        translate([x_move, 0, 0])
+        rotate([0, 90, 0])
+        magnet(thickness + inner_spacing);
+
+        translate([case_width - x_move, 0, 0])
+        rotate([0, 90, 0])
+        magnet(thickness + inner_spacing);
+      }
+    }
   }
 }
 
