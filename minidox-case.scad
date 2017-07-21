@@ -60,27 +60,36 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
-cap_1U = [19.50, 19.50, 0.25, 0.25];
-cap_2U = [cap_1U[0], 35.00, 0.25, 0.25];
+cap_1U = [18.25, 18.25, 0.75, 0.75];
+cap_2U = [cap_1U[0], 35.00, 2.00, 1.00];
+thumb_1U = [cap_1U[0], cap_1U[1], 2.00, 2.00];
 
 rows = 3;
 columns = 5;
 
-cap_x_start = -1.50;
-cap_x_stop  = cap_x_start + cap_1U[0] * columns + cap_1U[2] * columns;
-cap_y_upper = -1.00;
-cap_y_lower = -(cap_y_upper + cap_1U[1] * rows + cap_1U[3] * rows);
+function cap_over(keys) =
+  /* Size of keycaps + Size of space between them */
+  (cap_1U[0] * keys) + (cap_1U[2] * keys);
 
-function cap_over(keys) = cap_1U[0] * keys + cap_x_start;
+function cap_back(keys) =
+  cap_over(columns) - (cap_over(keys - 1) + (keys == 1 ? 0 : cap_1U[2]));
 
 function column_over(column, base) = lookup(column, [
     [ 1, -4.00 ],
     [ 2, -2.00 ],
     [ 3, -0.00 ],
     [ 4, -2.00 ],
-    [ 5, -6.00 ],
+    [ 5, -7.00 ],
   ]) + base;
 
+// Position the entire cut out by placing the center of column in the
+// center of the inner case.
+cap_x_start =
+  (max([for (i = outline) i[0] + outer_spacing])/2) -
+  (cap_over(3) - cap_1U[0]/2 - cap_1U[2]/2);
+
+cap_y_upper = -0.50;
+cap_y_lower = cap_y_upper + -(cap_1U[1] * rows + cap_1U[3] * (rows + 1));
 
 top_cut = [
   // Upper half:
@@ -93,27 +102,27 @@ top_cut = [
   [cap_over(3), column_over(4, cap_y_upper)], // Left of O (moved down)
   [cap_over(4), column_over(4, cap_y_upper)], // Left of P
   [cap_over(4), column_over(5, cap_y_upper)], // Left of P (moved down)
-  [cap_x_stop,  column_over(5, cap_y_upper)], // Right of P
+  [cap_over(5), column_over(5, cap_y_upper)], // Right of P
 
   // Lower half:
-  [cap_x_stop,  column_over(5, cap_y_lower)], // Right of /
-  [cap_over(4), column_over(5, cap_y_lower)], // Left of /
-  [cap_over(4), column_over(4, cap_y_lower)], // Left of / (moved up)
-  [cap_over(3), column_over(4, cap_y_lower)], // Left of .
-  [cap_over(3), column_over(3, cap_y_lower)], // Left of . (moved up)
-  [cap_over(2), column_over(3, cap_y_lower)], // Right of M
-  [cap_over(2), column_over(2, cap_y_lower)], // Right of M (moved down)
-  [cap_over(1), column_over(2, cap_y_lower)], // Right of N
-  [cap_over(1), column_over(1, cap_y_lower)], // Right of N (moved down)
+  [cap_back(1), column_over(5, cap_y_lower)], // Right of /
+  [cap_back(2), column_over(5, cap_y_lower)], // Left of /
+  [cap_back(2), column_over(4, cap_y_lower)], // Left of / (moved up)
+  [cap_back(3), column_over(4, cap_y_lower)], // Left of .
+  [cap_back(3), column_over(3, cap_y_lower)], // Left of . (moved up)
+  [cap_back(4), column_over(3, cap_y_lower)], // Right of M
+  [cap_back(4), column_over(2, cap_y_lower)], // Right of M (moved down)
+  [cap_back(5), column_over(2, cap_y_lower)], // Right of N
+  [cap_back(5), column_over(1, cap_y_lower)], // Right of N (moved down)
   [cap_x_start, column_over(1, cap_y_lower)], // Left of N
 ];
 
 // Now the three thumb keys:
 // These measurements are for the center of the cap and the
 // rotation.
-thumb_1 = [-7.00, 76.00, 30.0];
-thumb_2 = [18.50, 75.50, 18.00];
-thumb_3 = [39.00, 72.50, 0.00];
+thumb_1 = [-5.00, 77.50, 30.0];
+thumb_2 = [18.50, 75.50, 15.00];
+thumb_3 = [39.50, 73.50, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
@@ -462,12 +471,15 @@ module top() {
 
       // Most of the keys:
       linear_extrude(height=cut_depth)
+      offset(delta=0.75) // Give some breathing room.
+      offset(r=-rounding/2) offset(delta=+rounding/2)
+      offset(r=+rounding/2) offset(delta=-rounding/2)
       polygon(points=top_cut);
 
       // And then the thumb keys:
-      thumb_key_cutout(cap_2U, thumb_1, cut_depth);
-      thumb_key_cutout(cap_1U, thumb_2, cut_depth);
-      thumb_key_cutout(cap_1U, thumb_3, cut_depth);
+      thumb_key_cutout(cap_2U,   thumb_1, cut_depth);
+      thumb_key_cutout(thumb_1U, thumb_2, cut_depth);
+      thumb_key_cutout(thumb_1U, thumb_3, cut_depth);
     }
 
   top_studs();
