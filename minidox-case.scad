@@ -469,11 +469,11 @@ module top_studs() {
 
   difference() {
     bolts()
-      cylinder(d=bolt_shaft-0.5, h=height);
+      cylinder(d=bolt_shaft-0.15, h=height);
 
     bolts()
       translate([0, 0, thickness])
-      cylinder(d=bolt_size[0] - 0.5, h=height);
+      cylinder(d=bolt_size[0] - 0.25, h=height);
   }
 }
 
