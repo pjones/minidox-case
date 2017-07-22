@@ -37,7 +37,7 @@ cap_height = 7.90;              /* Height of keycap. */
 bolt_size = [3.0, 16.0];        /* M3x16 */
 bolt_inset = 2.5;               /* From wall to center of bolt. */
 bolt_shaft_wall = 2.0;          /* Wall thickness of shaft bolt screws into. */
-bolt_recess = 4.0;              /* How deep bolts go into the bottom. */
+bolt_recess = 2.0;              /* How deep bolts go into the bottom. */
 
 /******************************************************************************/
 // If using magnets to hold the cover on, fill these out and add a
@@ -70,9 +70,9 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
-cap_1U = [18.25, 18.25, 0.75, 1.00];
+cap_1U = [18.25, 18.25, 0.85, 0.85];
 cap_2U = [cap_1U[0], 35.00, 2.00, 1.00];
-thumb_1U = [cap_1U[0], cap_1U[1], 2.00, 2.00];
+thumb_1U = [cap_1U[0], cap_1U[1], 2.50, 2.50];
 
 rows = 3;
 columns = 5;
@@ -131,8 +131,8 @@ top_cut = [
 // These measurements are for the center of the cap and the
 // rotation.
 thumb_1 = [-5.00, 77.50, 30.0];
-thumb_2 = [18.00, 75.00, 15.00];
-thumb_3 = [40.50, 73.50, 0.00];
+thumb_2 = [18.25, 74.75, 15.00];
+thumb_3 = [40.00, 72.75, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
@@ -464,16 +464,14 @@ module case() {
 }
 
 /******************************************************************************/
-module top_studs() {
+module top_studs(cutout=false) {
   height = outer_height + thickness - bolt_recess - 1.0;
 
-  difference() {
-    bolts()
-      cylinder(d=bolt_shaft-0.15, h=height);
-
-    bolts()
-      translate([0, 0, thickness])
-      cylinder(d=bolt_size[0] - 0.25, h=height);
+  if (cutout) {
+    bolts() translate([0, 0, thickness/2])
+            cylinder(d=bolt_size[0] - 0.25, h=height + 1.0);
+  } else {
+    bolts() cylinder(d=bolt_shaft-0.15, h=height);
   }
 }
 
@@ -491,9 +489,9 @@ module thumb_key_cutout(key_shape, key_dims, depth) {
 }
 
 /******************************************************************************/
-module top() {
+module top_plate() {
   depth = inner_depth - board_thickness - 0.5;
-  cut_depth = thickness * 4;
+  cut_depth = switch_height;
 
   // This translate means all measurements made outside the union will
   // be relative to the circuit board.  This makes it easier to make
@@ -536,8 +534,18 @@ module top() {
       thumb_key_cutout(thumb_1U, thumb_2, cut_depth);
       thumb_key_cutout(thumb_1U, thumb_3, cut_depth);
     }
+}
 
-  top_studs();
+/******************************************************************************/
+module top() {
+  difference() {
+    union() {
+      top_plate();
+      top_studs();
+    }
+
+    top_studs(true);
+  }
 }
 
 /******************************************************************************/
