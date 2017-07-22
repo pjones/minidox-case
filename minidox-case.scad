@@ -18,7 +18,7 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "case";            /* case, top, or cover */
+print_part = "top";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
@@ -70,7 +70,7 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
-cap_1U = [18.25, 18.25, 0.75, 0.75];
+cap_1U = [18.25, 18.25, 0.75, 1.00];
 cap_2U = [cap_1U[0], 35.00, 2.00, 1.00];
 thumb_1U = [cap_1U[0], cap_1U[1], 2.00, 2.00];
 
@@ -131,8 +131,8 @@ top_cut = [
 // These measurements are for the center of the cap and the
 // rotation.
 thumb_1 = [-5.00, 77.50, 30.0];
-thumb_2 = [18.50, 75.50, 15.00];
-thumb_3 = [39.50, 73.50, 0.00];
+thumb_2 = [18.00, 75.00, 15.00];
+thumb_3 = [40.50, 73.50, 0.00];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
