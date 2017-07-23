@@ -18,7 +18,7 @@ $fs = 0.5;
 /******************************************************************************/
 // These are set from the command line:
 print_side = "right";           /* right or left */
-print_part = "top";            /* case, top, or cover */
+print_part = "case";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
@@ -281,7 +281,8 @@ module back_wall_device(dims) {
 
 /******************************************************************************/
 module pro_micro_cutout() {
-  connector_z = 3.5;
+  connector_z = 4.0;
+  connector_x = 9.0;
   board_y = 3;
   board_z = 1.5;
 
@@ -292,7 +293,13 @@ module pro_micro_cutout() {
 
   back_wall_device(pro_micro) {
     translate([0, -(wall_thickness/2), 0])
-     cube([9, wall_thickness, connector_z], center=true);
+      rotate([90, 0, 0])
+      hull() {
+        translate([-(connector_x/2 - connector_z/2), 0, 0])
+        cylinder(d=connector_z, h=wall_thickness, center=true);
+        translate([(connector_x/2 - connector_z/2), 0, 0])
+        cylinder(d=connector_z, h=wall_thickness, center=true);
+      }
 
     hull() { // This hull should allow printing without supports.
       translate([0, -(wall_thickness_no_padding), 0])
