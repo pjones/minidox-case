@@ -23,13 +23,13 @@ $fs = 0.5;
 
 /******************************************************************************/
 // These are set from the command line:
-print_side = "left";           /* right or left */
-print_part = "cover";            /* case, top, or cover */
+print_side = "right";           /* right or left */
+print_part = "case";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
 feature_cover = false;           /* Will you use a cover? */
-feature_magnets = true;         /* Add holes to hold magnets? */
+feature_magnets = false;         /* Add holes to hold magnets? */
 
 /******************************************************************************/
 // Settings you may want to tweak:
@@ -154,8 +154,8 @@ thumb_3 = [40.00, 72.75, 0.00];
 pro_micro = [ 20.0
             , 34.0
             , 6.0 // Used to set the inner height of the case.
-            , 67.05
-            , print_side == "right" ? 1.3 : 4.33
+            , 66.75
+            , print_side == "right" ? 1.3 : 4.5
             ];
 
 trrs = [ 13.0
