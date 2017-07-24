@@ -16,13 +16,19 @@ $fa = 1.0;
 $fs = 0.5;
 
 /******************************************************************************/
+/*
+  Note: All of the measurements in this file are for the RIGHT side.
+  To generate the left side the model is mirrored in the X axis.
+*/
+
+/******************************************************************************/
 // These are set from the command line:
-print_side = "right";           /* right or left */
-print_part = "case";            /* case, top, or cover */
+print_side = "left";           /* right or left */
+print_part = "cover";            /* case, top, or cover */
 
 /******************************************************************************/
 // Optional features:
-feature_cover = true;           /* Will you use a cover? */
+feature_cover = false;           /* Will you use a cover? */
 feature_magnets = true;         /* Add holes to hold magnets? */
 
 /******************************************************************************/
@@ -202,6 +208,26 @@ case_width = max([ for (i = outline) i[0] ]) +
   ((outer_spacing + thickness)*2) +
   (feature_cover ? thickness*2 : 0);
 
+cover_wall_height = outer_height/2 + thickness;
+
+/******************************************************************************/
+module cover_wall(height) {
+  difference() {
+    // The outer wall the case sits on.
+    linear_extrude(height=height)
+      offset(delta=outer_spacing + thickness*2)
+      offset(r=+rounding) offset(delta=-rounding)
+      polygon(points=outline);
+
+    // Cut the wall off the back so device access isn't limited.
+    translate([ case_width/2
+              , thickness + outer_spacing + thickness/2
+              , height/2
+              ])
+      cube([case_width*2, thickness, height+2], center=true);
+  }
+}
+
 /******************************************************************************/
 module outer_case() {
   difference() {
@@ -213,19 +239,7 @@ module outer_case() {
         polygon(points=outline);
 
       // Lower outer wall for case to sit on:
-      if (feature_cover) {
-        difference() {
-          // The outer wall the case sits on.
-          linear_extrude(height=outer_height/2 + thickness)
-            offset(delta=outer_spacing + thickness*2)
-            offset(r=+rounding) offset(delta=-rounding)
-            polygon(points=outline);
-
-          // Cut the wall off the back so device access isn't limited.
-          translate([-(thickness*2), thickness + outer_spacing, 0])
-          cube([case_width, thickness, outer_height/2 + thickness]);
-        }
-      }
+      if (feature_cover) cover_wall(cover_wall_height);
     }
 
     // Inner wall cutaway:
@@ -424,6 +438,27 @@ module magnet(depth) {
 }
 
 /******************************************************************************/
+module magnet_holes(width=case_width, extra_move=0) {
+  length = thickness;
+  middle = width/2;
+  x_move = width/2 - length/2 - thickness*2 + extra_move + magnet_depth;
+
+  translate([ 0
+            , -35.00
+            , (magnet_diameter/2) + (outer_height - (outer_height/4)) - 1.0
+            ])
+    union() {
+    translate([middle + x_move, 0, 0])
+      rotate([0, 90, 0])
+      magnet(length);
+
+    translate([middle - x_move, 0, 0])
+      rotate([0, 90, 0])
+      magnet(length);
+  }
+}
+
+/******************************************************************************/
 module case() {
   difference() {
     union() {
@@ -449,24 +484,8 @@ module case() {
     case_bolt_holes();
 
     // Optional holes for magnets.
-    if (feature_magnets) {
-      x_move = (thickness + inner_spacing)/2 + thickness +
-        (thickness - magnet_depth);
-
-      translate([ 0
-                , -35.00
-                , (magnet_diameter/2) + (outer_height - (outer_height/4)) - 1.0
-                ])
-      union() {
-        translate([x_move, 0, 0])
-        rotate([0, 90, 0])
-        magnet(thickness + inner_spacing);
-
-        translate([case_width - x_move, 0, 0])
-        rotate([0, 90, 0])
-        magnet(thickness + inner_spacing);
-      }
-    }
+    if (feature_magnets)
+      magnet_holes(case_width);
   }
 }
 
@@ -556,6 +575,47 @@ module top() {
 }
 
 /******************************************************************************/
+module cover_base() {
+  // This translate means all measurements made outside the union will
+  // be relative to the circuit board.  This makes it easier to make
+  // measurements.
+  translate([ outer_spacing + wall_thickness_no_padding*2
+            , -(outer_spacing + wall_thickness_no_padding)
+            , 0
+            ])
+    difference() {
+      cover_wall(cover_outer_height);
+
+      translate([0, 0, thickness])
+        linear_extrude(height=cover_outer_height)
+        offset(delta=outer_spacing)
+        offset(r=+rounding) offset(delta=-rounding)
+        polygon(points=outline);
+
+      translate([0, 0, cover_outer_height - cover_wall_height - 0.25])
+        linear_extrude(height=cover_wall_height+1.0)
+        offset(delta=outer_spacing+thickness+0.25)
+        offset(r=+rounding) offset(delta=-rounding)
+        polygon(points=outline);
+  }
+}
+
+/******************************************************************************/
+module cover() {
+  cover_width = max([ for (i = outline) i[0] ]) +
+    (outer_spacing + thickness*2)*2;
+
+  difference() {
+    cover_base();
+
+    if (feature_magnets) {
+      translate([0, 0, cover_wall_height/2])
+      magnet_holes(cover_width, thickness);
+    }
+  }
+}
+
+/******************************************************************************/
 // For test fitting:
 module board() {
   board_height = 1.6;
@@ -573,4 +633,7 @@ if (print_part == "case") {
 } else if (print_part == "top") {
   if (print_side == "right") {mirror([1, 0, 0]) top();}
   else {top();}
+} else if (print_part == "cover") {
+  if (print_side == "right") {mirror([1, 0, 0]) cover();}
+  else {cover();}
 }
