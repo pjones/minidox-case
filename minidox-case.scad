@@ -35,7 +35,7 @@ feature_magnets = false;         /* Add holes to hold magnets? */
 // Settings you may want to tweak:
 inner_depth = 9.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
-outer_spacing = 1.5;            /* Extra space in the case for the board to fit in. */
+outer_spacing = 1.0;            /* Extra space in the case for the board to fit in. */
 cover_inner_space = 2.0;        /* Extra space in the cover for cables, etc. */
 board_thickness = 1.6;          /* Thickness of circuit board. */
 switch_height = 11.75;          /* Space between top of board and bottom of key cap */
