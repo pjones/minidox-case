@@ -76,7 +76,7 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
-cap_1U = [18.25, 18.25, 0.85, 0.85];
+cap_1U = [18.25, 18.25, 0.85, 0.80];
 cap_2U = [cap_1U[0], 35.00, 2.00, 1.00];
 thumb_1U = [cap_1U[0], cap_1U[1], 2.50, 2.50];
 
