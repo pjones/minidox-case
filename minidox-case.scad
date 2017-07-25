@@ -208,6 +208,8 @@ case_width = max([ for (i = outline) i[0] ]) +
   ((outer_spacing + thickness)*2) +
   (feature_cover ? thickness*2 : 0);
 
+case_y_width = min([ for (i = outline) i[1] ]) * -1;
+
 cover_wall_height = outer_height/2 + thickness;
 
 /******************************************************************************/
@@ -438,14 +440,19 @@ module magnet(depth) {
 }
 
 /******************************************************************************/
-module magnet_holes(width=case_width, extra_move=0) {
+module magnet_holes(width=case_width,
+                    height=outer_height + thickness,
+                    dir=-1,
+                    extra_move=0)
+{
+
   length = thickness;
   middle = width/2;
   x_move = width/2 - length/2 - thickness*2 + extra_move + magnet_depth;
 
   translate([ 0
-            , -35.00
-            , (magnet_diameter/2) + (outer_height - (outer_height/4)) - 1.0
+            , -(case_y_width/2)
+            , height + (((magnet_diameter * 1.10) / 2) * dir)
             ])
     union() {
     translate([middle + x_move, 0, 0])
@@ -580,21 +587,24 @@ module cover_base() {
   // be relative to the circuit board.  This makes it easier to make
   // measurements.
   translate([ outer_spacing + wall_thickness_no_padding*2
-            , -(outer_spacing + wall_thickness_no_padding)
+            , -(outer_spacing + wall_thickness_no_padding*2)
             , 0
             ])
     difference() {
+      // Outside wall of the cover.
       cover_wall(cover_outer_height);
 
-      translate([0, 0, thickness])
-        linear_extrude(height=cover_outer_height)
-        offset(delta=outer_spacing)
+      // Inner ledge that matches up with the cover.
+      translate([0, 0, cover_outer_height - cover_wall_height - 0.25])
+        linear_extrude(height=cover_wall_height+0.5)
+        offset(delta=outer_spacing+thickness+0.25)
         offset(r=+rounding) offset(delta=-rounding)
         polygon(points=outline);
 
-      translate([0, 0, cover_outer_height - cover_wall_height - 0.25])
-        linear_extrude(height=cover_wall_height+1.0)
-        offset(delta=outer_spacing+thickness+0.25)
+      // Hollow out the space where the keycaps go.
+      translate([0, 0, thickness])
+        linear_extrude(height=cover_outer_height)
+        offset(delta=outer_spacing)
         offset(r=+rounding) offset(delta=-rounding)
         polygon(points=outline);
   }
@@ -609,8 +619,9 @@ module cover() {
     cover_base();
 
     if (feature_magnets) {
-      translate([0, 0, cover_wall_height/2])
-      magnet_holes(cover_width, thickness);
+      magnet_holes(width=cover_width, dir=1,
+                   height=cover_outer_height - cover_wall_height,
+                   extra_move=thickness);
     }
   }
 }
