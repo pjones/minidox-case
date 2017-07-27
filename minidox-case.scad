@@ -76,9 +76,8 @@ outline = [
 /******************************************************************************/
 // Points that outline the shape to cut out of the top so the key caps
 // can poke through:
-cap_1U = [18.25, 18.25, 0.85, 0.80];
-cap_2U = [cap_1U[0], 35.00, 2.00, 1.00];
-thumb_1U = [cap_1U[0], cap_1U[1], 2.50, 2.50];
+cap_1U = [18.25, 18.25, 0.85, 0.85];
+cap_2U = [cap_1U[0], 32.75, 0.85, 0.85];
 
 rows = 3;
 columns = 5;
@@ -100,12 +99,11 @@ function column_over(column, base) = lookup(column, [
 
 // Position the entire cut out by placing the center of column in the
 // center of the inner case.
-cap_x_start =
-  (max([for (i = outline) i[0] + outer_spacing])/2) -
-  (cap_over(3) - cap_1U[0]/2 - cap_1U[2]/2);
+cap_x_mid = max([for (i = outline) i[0] + outer_spacing])/2;
+cap_x_start = cap_x_mid - (cap_over(3) - cap_1U[0]/2 - cap_1U[2]/2);
 
-cap_y_upper = -0.50;
-cap_y_lower = cap_y_upper + -(cap_1U[1] * rows + cap_1U[3] * (rows + 1));
+cap_y_upper = -0.25;
+cap_y_lower = cap_y_upper + -(cap_1U[1] * rows + cap_1U[3] * rows);
 
 top_cut = [
   // Upper half:
@@ -134,11 +132,20 @@ top_cut = [
 ];
 
 // Now the three thumb keys:
-// These measurements are for the center of the cap and the
-// rotation.
-thumb_1 = [-5.00, 77.50, 30.0];
-thumb_2 = [18.25, 74.75, 15.00];
-thumb_3 = [40.00, 72.75, 0.00];
+thumb_3 = [ cap_x_mid - 7.15  // x offset (center of cap)
+          , 71.35             // y offset (center of cap)
+          , 0.00              // rotation (counterclockwise)
+          ];
+
+thumb_2 = [ thumb_3[0] - 21.25
+          , thumb_3[1] + 2.40
+          , 15.00
+          ];
+
+thumb_1 = [ thumb_2[0] - 23.75
+          , thumb_2[1] + 2.30
+          , 30.0
+          ];
 
 /******************************************************************************/
 // Size of the pro micro body and TRRS jack.
@@ -504,21 +511,27 @@ module top_studs(cutout=false) {
     bolts() translate([0, 0, thickness/2])
             cylinder(d=bolt_size[0] - 0.25, h=height + 1.0);
   } else {
-    bolts() cylinder(d=bolt_shaft-0.15, h=height);
+    bolts() cylinder(d=bolt_shaft-0.20, h=height);
   }
 }
 
 /******************************************************************************/
-module thumb_key_cutout(key_shape, key_dims, depth) {
- translate([ key_dims[0]
-           , -key_dims[1]
-           , depth/2
-           ])
+module keycap_cutout(height, padding=0.75) {
+  linear_extrude(height=height)
+    offset(delta=padding) // Give some breathing room.
+    offset(r=-rounding/2) offset(delta=+rounding/2)
+    offset(r=+rounding/2) offset(delta=-rounding/2)
+    children();
+}
+
+/******************************************************************************/
+module thumb_key_cutout(key_shape, key_dims, height) {
+  translate([key_dims[0], -key_dims[1], 0])
     rotate([0, 0, key_dims[2]])
-    cube([ key_shape[0] + key_shape[2]
-         , key_shape[1] + key_shape[3]
-         , depth
-         ], center=true);
+    keycap_cutout(height)
+    square(size=[ key_shape[0] + key_shape[2]
+                , key_shape[1] + key_shape[3]
+                ], center=true);
 }
 
 /******************************************************************************/
@@ -555,17 +568,11 @@ module top_plate() {
         }
       }
 
-      // Most of the keys:
-      linear_extrude(height=cut_depth)
-      offset(delta=0.75) // Give some breathing room.
-      offset(r=-rounding/2) offset(delta=+rounding/2)
-      offset(r=+rounding/2) offset(delta=-rounding/2)
-      polygon(points=top_cut);
-
-      // And then the thumb keys:
-      thumb_key_cutout(cap_2U,   thumb_1, cut_depth);
-      thumb_key_cutout(thumb_1U, thumb_2, cut_depth);
-      thumb_key_cutout(thumb_1U, thumb_3, cut_depth);
+      // Cut out the shapes for the keycaps.
+      keycap_cutout(cut_depth) polygon(points=top_cut);
+      thumb_key_cutout(cap_2U, thumb_1, cut_depth);
+      thumb_key_cutout(cap_1U, thumb_2, cut_depth);
+      thumb_key_cutout(cap_1U, thumb_3, cut_depth);
     }
 }
 
