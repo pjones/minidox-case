@@ -201,13 +201,16 @@ echo("OUTER HEIGHT:", outer_height);
 
 /******************************************************************************/
 // How big the cover needs to be to enclose everything:
-cover_inner_height = board_to_caps + cover_inner_space - inner_depth;
+cover_inner_height =
+  board_to_caps + board_thickness + // Everything from the shelf upwards
+  cover_inner_space -               // And extra space
+  (inner_depth + thickness);        // Remove space used by case and top
+
 echo("COVER INNER HEIGHT:", cover_inner_height);
 
 /******************************************************************************/
 // How big is the cover on the outside:
-cover_outer_height = max(outer_height, cover_inner_height) +
-  thickness + outer_height/2;
+cover_outer_height = cover_inner_height + thickness + outer_height/2;
 echo("COVER OUTER HEIGHT:", cover_outer_height);
 
 /******************************************************************************/
