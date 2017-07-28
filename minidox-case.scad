@@ -36,7 +36,7 @@ feature_magnets = false;         /* Add holes to hold magnets? */
 inner_depth = 9.0;              /* How high the case will come up from the board upward. */
 inner_spacing = 2.25;           /* Space under the board to hold it. */
 outer_spacing = 1.0;            /* Extra space in the case for the board to fit in. */
-cover_inner_space = 2.0;        /* Extra space in the cover for cables, etc. */
+cover_inner_space = 0.0;        /* Extra space in the cover for cables, etc. */
 board_thickness = 1.6;          /* Thickness of circuit board. */
 switch_height = 11.75;          /* Space between top of board and bottom of key cap */
 cap_height = 7.90;              /* Height of keycap. */
@@ -203,6 +203,7 @@ echo("OUTER HEIGHT:", outer_height);
 // How big the cover needs to be to enclose everything:
 cover_inner_height =
   board_to_caps + board_thickness + // Everything from the shelf upwards
+  thickness +                       // To include the top wall of the cover
   cover_inner_space -               // And extra space
   (inner_depth + thickness);        // Remove space used by case and top
 
