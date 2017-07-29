@@ -100,7 +100,7 @@ function column_over(column, base) = lookup(column, [
 // Position the entire cut out by placing the center of column in the
 // center of the inner case.
 cap_x_mid = max([for (i = outline) i[0] + outer_spacing])/2;
-cap_x_start = cap_x_mid - (cap_over(3) - cap_1U[0]/2 - cap_1U[2]/2);
+cap_x_start = cap_x_mid - (cap_over(3) - cap_1U[0]/2 - cap_1U[2]/2) - 0.25;
 
 cap_y_upper = -0.25;
 cap_y_lower = cap_y_upper + -(cap_1U[1] * rows + cap_1U[3] * rows);
@@ -132,7 +132,7 @@ top_cut = [
 ];
 
 // Now the three thumb keys:
-thumb_3 = [ cap_x_mid - 7.15  // x offset (center of cap)
+thumb_3 = [ cap_x_mid - 7.40  // x offset (center of cap)
           , 71.35             // y offset (center of cap)
           , 0.00              // rotation (counterclockwise)
           ];
