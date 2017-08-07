@@ -593,6 +593,16 @@ module top() {
 }
 
 /******************************************************************************/
+module cover_feet() {
+  feet_diameter = thickness;
+
+  linear_extrude(height=cover_outer_height)
+    offset(delta=outer_spacing + thickness*2 + feet_diameter)
+    offset(r=+rounding) offset(delta=-rounding)
+    polygon(points=outline);
+}
+
+/******************************************************************************/
 module cover_base() {
   // This translate means all measurements made outside the union will
   // be relative to the circuit board.  This makes it easier to make
@@ -602,8 +612,11 @@ module cover_base() {
             , 0
             ])
     difference() {
-      // Outside wall of the cover.
-      cover_wall(cover_outer_height);
+      union() {
+        // Outside wall of the cover.
+        cover_wall(cover_outer_height);
+        cover_feet();
+      }
 
       // Inner ledge that matches up with the cover.
       translate([0, 0, cover_outer_height - cover_wall_height - 0.25])
@@ -632,7 +645,7 @@ module cover() {
     if (feature_magnets) {
       magnet_holes(width=cover_width, dir=1,
                    height=cover_outer_height - cover_wall_height,
-                   extra_move=thickness);
+                   extra_move=thickness + 0.25);
     }
   }
 }
