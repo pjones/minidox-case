@@ -18,9 +18,9 @@ plate may not align correctly.
 
 ## Pictures
 
-![all done](http://imgur.com/eXvqOrV)
+![all done](http://i.imgur.com/eXvqOrV.jpg)
 
-![case with cover shelf](http://imgur.com/rKPWOmr)
+![case with cover shelf](http://i.imgur.com/rKPWOmr.jpg)
 
 More pictures: http://imgur.com/a/ioUCZ
 
